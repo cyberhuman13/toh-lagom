@@ -44,7 +44,6 @@ object HeroBehavior {
     )
 }
 
-// This is a workaround for AWS Cassandra not currently supporting empty strings.
 object HeroEventAdapter extends EventAdapter[HeroEvent, HeroEvent] {
   def manifest(event: HeroEvent): String = " " // Override the empty string.
   def fromJournal(event: HeroEvent, manifest: String) = EventSeq.single(event)

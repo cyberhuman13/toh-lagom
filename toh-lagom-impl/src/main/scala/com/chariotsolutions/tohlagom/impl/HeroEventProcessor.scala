@@ -1,16 +1,28 @@
-package com.chariotsolutions.tohlagom.cassandra
+package com.chariotsolutions.tohlagom.impl
 
 import akka.Done
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
+import com.lightbend.lagom.scaladsl.persistence.{AggregateEventShards, AggregateEventTag, ReadSideProcessor}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 import com.datastax.driver.core.PreparedStatement
-import com.chariotsolutions.tohlagom.common
-import com.chariotsolutions.tohlagom.impl._
 
-class HeroEventProcessor(readSide: CassandraReadSide, session: CassandraSession)(implicit ec: ExecutionContext)
-  extends ReadSideProcessor[HeroEvent] with common.HeroEventProcessor {
-  import common.HeroEventProcessor._
+object HeroEventProcessor {
+  val Table = "hero"
+  val IdColumn = "id"
+  val NameColumn = "name"
+  val EventProcessorId = "hero-offset"
+}
+
+class HeroEventProcessor(readSide: CassandraReadSide, session: CassandraSession)
+                        (implicit ec: ExecutionContext) extends ReadSideProcessor[HeroEvent] {
+  import HeroEventProcessor._
+
+  def aggregateTags: Set[AggregateEventTag[HeroEvent]] = HeroEvent.Tag match {
+    case tagger: AggregateEventTag[HeroEvent] =>
+      Set(tagger)
+    case shardedTagger: AggregateEventShards[HeroEvent] =>
+      shardedTagger.allTags
+  }
 
   // The promises are initialized in builder.setPrepare below.
   private val promiseInsert = Promise[PreparedStatement]

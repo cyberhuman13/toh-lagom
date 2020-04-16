@@ -1,18 +1,31 @@
-package com.chariotsolutions.tohlagom.common
+package com.chariotsolutions.tohlagom.impl
 
+import com.softwaremill.macwire.wire
 import play.api.libs.ws.ahc.AhcWSComponents
 import akka.cluster.sharding.typed.scaladsl.Entity
-import com.lightbend.lagom.scaladsl.server.LagomApplicationLoader
-import com.lightbend.lagom.scaladsl.cluster.typed.ClusterShardingTypedComponents
+import com.lightbend.lagom.scaladsl.api.ServiceLocator
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import com.chariotsolutions.tohlagom.impl._
+import com.lightbend.lagom.scaladsl.server.{LagomApplication, LagomApplicationContext, LagomApplicationLoader}
+import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
+import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.chariotsolutions.tohlagom.api._
 
-trait TourOfHeroesLoader extends LagomApplicationLoader {
+class TourOfHeroesLoader extends LagomApplicationLoader {
   override def describeService = Some(readDescriptor[TourOfHeroesService])
+
+  def load(context: LagomApplicationContext): LagomApplication =
+    new TourOfHeroesApplication(context) {
+      def serviceLocator: ServiceLocator = ServiceLocator.NoServiceLocator
+    }
+
+  override def loadDevMode(context: LagomApplicationContext): LagomApplication =
+    new TourOfHeroesApplication(context) with LagomDevModeComponents
 }
 
-trait TourOfHeroesApplication extends AhcWSComponents with ClusterShardingTypedComponents {
+abstract class TourOfHeroesApplication(context: LagomApplicationContext)
+  extends LagomApplication(context) with CassandraPersistenceComponents with AhcWSComponents {
+  lazy val lagomServer = serverFor[TourOfHeroesService](wire[TourOfHeroesServiceImpl])
+
   // Initialize the sharding of the Aggregate.
   // The following starts the aggregate Behavior under a given sharding entity typeKey.
   clusterSharding.init(Entity(HeroState.typeKey)(HeroBehavior.create))

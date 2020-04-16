@@ -1,4 +1,4 @@
-package com.chariotsolutions.tohlagom.common
+package com.chariotsolutions.tohlagom.impl
 
 import akka.{Done, NotUsed}
 import akka.stream.Materializer
@@ -6,18 +6,23 @@ import akka.persistence.query.PersistenceQuery
 import scala.concurrent.{ExecutionContext, Future}
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import com.lightbend.lagom.scaladsl.persistence.{PersistentEntityRegistry, ReadSide, ReadSideProcessor}
+import com.lightbend.lagom.scaladsl.persistence.{PersistentEntityRegistry, ReadSide}
+import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.chariotsolutions.tohlagom.impl._
 import com.chariotsolutions.tohlagom.api._
 
-abstract class TourOfHeroesServiceImpl(sharding: ClusterSharding, registry: PersistentEntityRegistry)(readSide: ReadSide)
-                                      (implicit ec: ExecutionContext, materializer: Materializer) extends TourOfHeroesService {
+class TourOfHeroesServiceImpl(sharding: ClusterSharding, registry: PersistentEntityRegistry)
+                             (readSide: ReadSide, cassandraReadSide: CassandraReadSide, session: CassandraSession)
+                             (implicit ec: ExecutionContext, materializer: Materializer) extends TourOfHeroesService {
   import HeroEventProcessor._
-  readSide.register[HeroEvent](eventProcessor)
-  protected def eventProcessor: ReadSideProcessor[HeroEvent]
-  protected def performRead(query: String): Future[Seq[Hero]]
+  readSide.register[HeroEvent](new HeroEventProcessor(cassandraReadSide, session))
+
+  private def performRead(query: String): Future[Seq[Hero]] =
+    session.selectAll(query).map(_.map(row => Hero(
+      row.getString(IdColumn),
+      row.getString(NameColumn).toTitleCase
+    )))
 
   // Looks up the entity for the given ID.
   private def entityRef(id: String): EntityRef[HeroCommand] =

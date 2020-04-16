@@ -7,7 +7,6 @@ import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.matchers.should.Matchers
 import com.lightbend.lagom.scaladsl.testkit.ServiceTest
 import com.lightbend.lagom.scaladsl.server.LocalServiceLocator
-import com.chariotsolutions.tohlagom.cassandra.TourOfHeroesApplication
 import com.chariotsolutions.tohlagom.api._
 
 @RequiresCassandra
