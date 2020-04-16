@@ -3,10 +3,11 @@ import com.amazonaws.util.Base64
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest
 import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.{Format, Json}
 
 object AmazonUtils {
   case class Credentials(username: String, password: String)
+  implicit val format: Format[Credentials] = Json.format
 
   lazy val awsRegion = Try(Regions.getCurrentRegion).toOption.flatMap(Option.apply)
     .getOrElse(Region.getRegion(Regions.US_EAST_1))
@@ -22,13 +23,6 @@ object AmazonUtils {
     val result = awsSecretsClient.getSecretValue(request)
     val secret = Option(result.getSecretString)
       .getOrElse(new String(Base64.decode(result.getSecretBinary.array)))
-
-    Json.parse(secret) match {
-      case JsObject(json) if json.size == 1 => json.head match {
-        case (username, JsString(password)) => Credentials(username, password)
-        case _ => throw new RuntimeException(s"Malformed AWS secret with id '$secretId'.")
-      }
-      case _ => throw new RuntimeException(s"Malformed AWS secret with id '$secretId'.")
-    }
+    Json.parse(secret).as[Credentials]
   }
 }

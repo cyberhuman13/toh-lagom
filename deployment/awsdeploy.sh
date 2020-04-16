@@ -40,8 +40,8 @@ aws rds create-db-subnet-group \
 echo "Creating an Aurora database cluster..."
 dbSecret=$(aws secretsmanager get-secret-value --secret-id toh-lagom-postgresql \
     | jq -r '.SecretString')
-dbUsername=$(echo ${dbSecret} | jq 'keys' | jq -r '.[0]')
-dbPassword=$(echo ${dbSecret} | jq -r ".${dbUsername}")
+dbUsername=$(echo ${dbSecret} | jq -r '.username')
+dbPassword=$(echo ${dbSecret} | jq -r '.password')
 
 aws rds create-db-cluster \
     --db-cluster-identifier toh-lagom --database-name toh_lagom \
