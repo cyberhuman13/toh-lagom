@@ -13,7 +13,14 @@ repositoryUri=$(aws ecr describe-repositories --repository-names toh-lagom \
 echo "AWS ECR repository: ${repositoryUri}"
 
 echo 'Creating AWS Kubernetes cluster...'
-yq write -d1 k8cluster.yaml spec.template.spec.containers[0].image "${repositoryUri}:${TOH_VERSION}" > kubernetes.yaml
+yq write k8cluster.yaml metadata.region ${AWS_REGION} > kubernetes.yaml
+# Potentially may have to configure specific availability zones, depending on your AWS account.
+echo 'availabilityZones:' >> kubernetes.yaml
+echo "- ${AWS_REGION}a" >> kubernetes.yaml
+echo "- ${AWS_REGION}f" >> kubernetes.yaml
+echo '---' >> kubernetes.yaml
+yq write k8deployment.yaml spec.template.spec.containers[0].image "${repositoryUri}:${TOH_VERSION}" >> kubernetes.yaml
+
 eksctl create cluster -f kubernetes.yaml
 kubectl apply -f k8roles.yaml
 rm -rf kubernetes.yaml
