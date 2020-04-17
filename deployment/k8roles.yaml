@@ -1,4 +1,4 @@
-# Create a role, , that can list pods and
+# Create a role that can list pods and
 # bind the default service account in the namespace
 # that the binding is deployed to to that role.
 kind: Role
@@ -50,8 +50,8 @@ metadata:
   name: fabric8-rbac
 subjects:
   - kind: ServiceAccount
-    name: default # Reference to upper's
-    namespace: default # Reference to upper's
+    name: default
+    namespace: default
 roleRef:
   kind: ClusterRole
   name: cluster-admin

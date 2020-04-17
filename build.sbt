@@ -17,7 +17,7 @@ scalacOptions in ThisBuild ++= Seq(
 lagomKafkaEnabled in ThisBuild := false
 lagomCassandraEnabled in ThisBuild := false
 lagomUnmanagedServices in ThisBuild := Map(
-  "cas_native" -> s"https://cassandra.${AmazonUtils.awsRegion.getName}.amazonaws.com:9142"
+  "cas_native" -> s"https://${CassandraUtils.contactPoint(AmazonUtils.awsRegion)}:${CassandraUtils.port}"
 )
 
 val kubernetesApi = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.5"
@@ -77,3 +77,6 @@ lazy val `toh-lagom-impl` = (project in file("toh-lagom-impl"))
     push in Ecr := ((push in Ecr) dependsOn (publishLocal in Docker, login in Ecr)).value,
     localDockerImage in Ecr := s"${(packageName in Docker).value}:${(version in Docker).value}"
   )
+
+lazy val initializeSchema = taskKey[Unit]("Initializes Cassandra schema")
+initializeSchema := CassandraUtils.initializeSchema()

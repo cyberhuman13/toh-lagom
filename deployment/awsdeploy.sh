@@ -3,11 +3,12 @@
 export TOH_VERSION=$1
 if [[ -z ${TOH_VERSION} ]]
 then
-    TOH_VERSION='latest'
+    export TOH_VERSION='latest'
 fi
 echo "Using the toh-lagom version ${TOH_VERSION}."
 
-cd ..; sbt ecr:createRepository; cd ./deployment
+echo "Initializing AWS Cassandra schema and ECR repository..."
+cd ..; sbt ecr:createRepository initializeSchema; cd ./deployment
 repositoryUri=$(aws ecr describe-repositories --repository-names toh-lagom \
     | jq -r '.repositories[0].repositoryUri')
 echo "AWS ECR repository: ${repositoryUri}"
@@ -44,12 +45,13 @@ aws rds create-db-subnet-group \
     --db-subnet-group-description 'Subnets for a database cluster.' \
     --subnet-ids ${subnetsPrivate}
 
-echo "Creating an Aurora database cluster..."
+echo "Retrieving database credentials..."
 dbSecret=$(aws secretsmanager get-secret-value --secret-id toh-lagom-postgresql \
     | jq -r '.SecretString')
 dbUsername=$(echo ${dbSecret} | jq -r '.username')
 dbPassword=$(echo ${dbSecret} | jq -r '.password')
 
+echo "Creating an Aurora database cluster..."
 aws rds create-db-cluster \
     --db-cluster-identifier toh-lagom --database-name toh_lagom \
     --master-username ${dbUsername} --master-user-password ${dbPassword} \

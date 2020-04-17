@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: toh-lagom
-          image: 219289705433.dkr.ecr.us-east-1.amazonaws.com/toh-lagom:latest
+          image: __PLACEHOLDER__
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
@@ -44,9 +44,8 @@ spec:
               # the management port must be named accordingly:
               # name: management
           env:
-            # The Kubernetes API discovery will use this service name
-            # to look for nodes with this value in the 'run' label.
-            # This can be customized with the 'pod-label-selector' setting.
+            # Kubernetes API discovery will use this service name
+            # to look for nodes with this value in the 'app' label.
             - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
               valueFrom:
                 fieldRef:
