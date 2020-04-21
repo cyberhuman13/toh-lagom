@@ -92,10 +92,11 @@ kubectl run toh-lagom \
     --requests=cpu=500m --expose --port=9000
 
 echo 'Configuring autoscaling...'
-kubectl autoscale deployment toh-lagom --cpu-percent=50 --min=2 --max=3
+minReplicas=2
+kubectl autoscale deployment toh-lagom --cpu-percent=50 --min=${minReplicas} --max=3
 
 readyReplicas=0
-until [[ ${readyReplicas} == 2 ]]
+until [[ ${readyReplicas} == ${minReplicas} ]]
 do
     sleep 10
     readyReplicas=$(kubectl get deployment toh-lagom -o json \
@@ -118,7 +119,6 @@ s3endpoint="${bucket}.s3.amazonaws.com"
 aws s3 mb "s3://${bucket}" --region ${AWS_REGION}
 aws s3api wait bucket-exists --bucket ${bucket}
 aws s3 cp ../dist "s3://${bucket}" --recursive --storage-class INTELLIGENT_TIERING
-aws s3 website "s3://${bucket}" --index-document index.html --error-document error.html
 
 echo 'Creating a CloudFront origin access identity...'
 originAccessIdentity=$(aws cloudfront create-cloud-front-origin-access-identity \
@@ -142,6 +142,6 @@ rm -rf distribution.json
 
 echo 'Waiting for the CloudFront distribution to deploy...'
 aws cloudfront wait distribution-deployed --id ${distributionId}
-cfEndpoint=$(aws cloudfront get-distribution --id ${distributionId} \
+export CF_ENDPOINT=$(aws cloudfront get-distribution --id ${distributionId} \
     | jq -r '.Distribution.DomainName')
-echo "Successfully deployed a Cloudfront distribution: ${cfEndpoint}"
+echo "Successfully deployed a Cloudfront distribution: ${CF_ENDPOINT}"
