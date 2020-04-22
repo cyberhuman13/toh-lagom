@@ -61,6 +61,7 @@ lazy val `toh-lagom-impl` = (project in file("toh-lagom-impl"))
     mappings in Universal += file("cassandra_truststore.jks") -> "cassandra_truststore.jks",
     javaOptions in Universal ++= Seq(
       "-Dpidfile.path=/dev/null",
+      "-Dconfig.resource=production.conf",
       s"-Dplay.http.secret.key=${Random.alphanumeric.take(40).mkString}",
       s"-Dcassandra.default.authentication.username=${AmazonUtils.cassandraCredentials.username}",
       s"-Dcassandra.default.authentication.password=${AmazonUtils.cassandraCredentials.password}",
