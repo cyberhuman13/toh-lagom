@@ -65,7 +65,7 @@ class HeroAggregateSpec extends ScalaTestWithActorTestKit(s"""
       confirmationProbe.expectMessage(Accepted)
 
       ref ! FetchHero(stateProbe.ref)
-      stateProbe.expectNoMessage(5 seconds)
+      stateProbe.expectNoMessage(timeout.duration)
     }
 
     "fail delete an already deleted hero" in {
