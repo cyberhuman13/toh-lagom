@@ -12,6 +12,13 @@ sealed trait HeroEvent extends AggregateEvent[HeroEvent] {
 
 object HeroEvent {
   implicit val format: Format[HeroEvent] = Json.format
+
+  /**
+   * Tags are used for getting and publishing streams of events. Each event
+   * will have this tag, and in this case, we are partitioning the tags into
+   * 2 shards, which means we can have 2 concurrent processors/publishers of
+   * events.
+   */
   val NumShards = 2
   val Tag =
     if (NumShards > 1) AggregateEventTag.sharded[HeroEvent](NumShards)

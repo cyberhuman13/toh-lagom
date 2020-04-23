@@ -11,6 +11,7 @@ class HeroEventProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[HeroE
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HeroEvent] = {
     val builder = readSide.builder[HeroEvent](EventProcessorId)
 
+    // The global prepare callback is called at least once on cluster startup.
     builder.setGlobalPrepare { connection =>
       JdbcSession.tryWith(connection.prepareStatement(
         s"""CREATE TABLE IF NOT EXISTS $Table (
@@ -25,6 +26,8 @@ class HeroEventProcessor(readSide: JdbcReadSide) extends ReadSideProcessor[HeroE
            |  ON $Table USING gin ($NameColumn gin_trgm_ops)
            |""".stripMargin))(_.execute())
     }
+
+    // No prepare callback, since the JDBC driver's PreparedStatement class is not threadsafe.
 
     builder.setEventHandler[HeroCreated] { case (connection, element) =>
       JdbcSession.tryWith(

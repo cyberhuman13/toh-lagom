@@ -13,6 +13,8 @@ class HeroEventProcessor(readSide: CassandraReadSide, session: CassandraSession)
   import common.HeroEventProcessor._
 
   // The promises are initialized in builder.setPrepare below.
+  // This is safe to prepare the statements this way, because
+  // Cassandra driver's PreparedStatement class is threadsafe.
   private val promiseInsert = Promise[PreparedStatement]
   private val promiseUpdate = Promise[PreparedStatement]
   private val promiseDelete = Promise[PreparedStatement]
@@ -24,6 +26,7 @@ class HeroEventProcessor(readSide: CassandraReadSide, session: CassandraSession)
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HeroEvent] = {
     val builder = readSide.builder[HeroEvent](EventProcessorId)
 
+    // The global prepare callback is called at least once on cluster startup.
     builder.setGlobalPrepare(() =>
       for {
         _ <- session.executeCreateTable(
@@ -39,6 +42,8 @@ class HeroEventProcessor(readSide: CassandraReadSide, session: CassandraSession)
       } yield Done
     )
 
+    // The prepare callback is called once per shard.
+    // We use it to construct reusable PreparedStatements.
     builder.setPrepare { _ =>
       val insertStmt = session.prepare(s"INSERT INTO $Table ($IdColumn, $NameColumn) VALUES (?, ?)")
       val updateStmt = session.prepare(s"UPDATE $Table SET $NameColumn = ? WHERE $IdColumn = ?")

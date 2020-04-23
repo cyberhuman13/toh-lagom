@@ -6,13 +6,13 @@ import akka.persistence.query.PersistenceQuery
 import scala.concurrent.{ExecutionContext, Future}
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import com.lightbend.lagom.scaladsl.persistence.{PersistentEntityRegistry, ReadSide, ReadSideProcessor}
+import com.lightbend.lagom.scaladsl.persistence.{ReadSide, ReadSideProcessor}
 import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.chariotsolutions.tohlagom.impl._
 import com.chariotsolutions.tohlagom.api._
 
-abstract class TourOfHeroesServiceImpl(sharding: ClusterSharding, registry: PersistentEntityRegistry)(readSide: ReadSide)
+abstract class TourOfHeroesServiceImpl(sharding: ClusterSharding)(readSide: ReadSide)
                                       (implicit ec: ExecutionContext, materializer: Materializer) extends TourOfHeroesService {
   import HeroEventProcessor._
   readSide.register[HeroEvent](eventProcessor)
@@ -49,7 +49,7 @@ abstract class TourOfHeroesServiceImpl(sharding: ClusterSharding, registry: Pers
     val heroId = id2str(hero.id.toInt)
     entityRef(heroId).ask[Confirmation](replyTo => ChangeHero(hero.name, replyTo)).map {
       case Accepted => Done
-      case _ => throw BadRequest(s"Failed to create a hero with name ${hero.name}.")
+      case _ => throw BadRequest(s"Failed to change a hero with id $heroId.")
     }
   }
 
