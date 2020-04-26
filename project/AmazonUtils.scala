@@ -1,4 +1,3 @@
-import scala.util.Try
 import com.amazonaws.util.Base64
 import com.amazonaws.regions.{Region, Regions}
 import com.amazonaws.services.secretsmanager.model.GetSecretValueRequest
@@ -9,11 +8,10 @@ object AmazonUtils {
   case class Credentials(username: String, password: String)
   implicit val format: Format[Credentials] = Json.format
 
-  lazy val awsRegion = Try(Regions.getCurrentRegion).toOption.flatMap(Option.apply)
-    .getOrElse(Region.getRegion(Regions.US_EAST_1))
-
+  lazy val awsRegionName = sys.env("AWS_REGION")
+  lazy val awsRegion = Region.getRegion(Regions.fromName(awsRegionName))
   private lazy val awsSecretsClient = AWSSecretsManagerClientBuilder.standard
-    .withRegion(awsRegion.getName).build
+    .withRegion(awsRegionName).build
 
   lazy val cassandraCredentials = getCredentials("toh-lagom-cassandra")
   lazy val postgresqlCredentials = getCredentials("toh-lagom-postgresql")

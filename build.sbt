@@ -17,7 +17,7 @@ scalacOptions in ThisBuild ++= Seq(
 lagomKafkaEnabled in ThisBuild := false
 lagomCassandraEnabled in ThisBuild := false
 lagomUnmanagedServices in ThisBuild := Map(
-  "cas_native" -> s"https://${CassandraUtils.contactPoint(AmazonUtils.awsRegion)}:${CassandraUtils.port}"
+  "cas_native" -> s"https://${CassandraUtils.contactPoint}:${CassandraUtils.port}"
 )
 
 val kubernetesApi = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.5"

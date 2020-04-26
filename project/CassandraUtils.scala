@@ -1,14 +1,11 @@
 import scala.util.Try
 import java.net.InetSocketAddress
-import com.amazonaws.regions.Region
 import com.datastax.driver.core.{Cluster, PlainTextAuthProvider}
 
 object CassandraUtils {
+  lazy val contactPoint = s"""cassandra.${sys.env("AWS_REGION")}.amazonaws.com"""
   val keyspace = "toh_lagom"
   val port = 9142
-
-  def contactPoint(region: Region) =
-    s"cassandra.${region.getName}.amazonaws.com"
 
   def initializeSchema(): Unit = {
     System.setProperty("javax.net.ssl.trustStore", "../cassandra_truststore.jsk")
@@ -16,7 +13,7 @@ object CassandraUtils {
     val credentials = AmazonUtils.cassandraCredentials
 
     val authProvider = new PlainTextAuthProvider(credentials.username, credentials.password)
-    val address = new InetSocketAddress(contactPoint(AmazonUtils.awsRegion), port)
+    val address = new InetSocketAddress(contactPoint, port)
     val cluster = Cluster.builder.addContactPoints(address.getAddress)
       .withPort(port).withAuthProvider(authProvider).withSSL.build
     val session = cluster.newSession
