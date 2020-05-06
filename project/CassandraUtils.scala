@@ -41,9 +41,11 @@ object CassandraUtils {
            |  ser_manifest text,
            |  event_manifest text,
            |  event blob,
+           |  message blob,
            |  meta_ser_id int,
            |  meta_ser_manifest text,
            |  meta blob,
+           |  used boolean,
            |  tags set<text>,
            |  PRIMARY KEY ((persistence_id, partition_nr), sequence_nr, timestamp, timebucket)
            |) WITH gc_grace_seconds = 864000
@@ -124,13 +126,6 @@ object CassandraUtils {
            |);
            |""".stripMargin)
       println(s"Successfully created Cassandra table $keyspace.metadata.")
-
-      session.execute(
-        s"""CREATE TABLE IF NOT EXISTS $keyspace.all_persistence_ids(
-           |  persistence_id text PRIMARY KEY
-           |);
-           |""".stripMargin)
-      println(s"Successfully created Cassandra table $keyspace.all_persistence_ids.")
 
       session.execute(
         s"""CREATE TABLE IF NOT EXISTS $keyspace.snapshots (

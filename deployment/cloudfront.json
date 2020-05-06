@@ -9,18 +9,18 @@
     "Items": [
       {
         "Id": "s3-toh-lagom",
-        "DomainName": "__PLACEHOLDER__",
+        "DomainName": "${S3_ENDPOINT}",
         "OriginPath": "",
         "CustomHeaders": {
           "Quantity": 0
         },
         "S3OriginConfig": {
-          "OriginAccessIdentity": "__PLACEHOLDER__"
+          "OriginAccessIdentity": "${ORIGIN_ACCESS_IDENTITY}"
         }
       },
       {
         "Id": "elb-toh-lagom",
-        "DomainName": "__PLACEHOLDER__",
+        "DomainName": "${ELB_ENDPOINT}",
         "OriginPath": "",
         "CustomHeaders": {
           "Quantity": 0
