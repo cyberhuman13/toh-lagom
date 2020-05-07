@@ -56,6 +56,7 @@ lazy val `toh-lagom-impl` = (project in file("toh-lagom-impl"))
     )
   )
   .settings(
+    dockerBaseImage := "adoptopenjdk/openjdk11",
     packageName in Docker := (name in ThisBuild).value,
     dockerExposedPorts in Docker := Seq(9000, 9008, 8558, 2552, 25520),
     mappings in Universal += file("cassandra_truststore.jks") -> "cassandra_truststore.jks",
