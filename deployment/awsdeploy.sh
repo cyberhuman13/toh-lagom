@@ -74,7 +74,7 @@ dbCluster=$(aws rds create-db-cluster \
 dbStatus=''
 until [[ ${dbStatus} == 'available' ]]
 do
-    sleep 10
+    sleep 30
     dbStatus=$(aws rds describe-db-clusters --db-cluster-identifier toh-lagom \
         | jq -r '.DBClusters[0].Status')
     echo "Cluster status: ${dbStatus}..."
