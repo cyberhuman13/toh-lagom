@@ -61,7 +61,7 @@ abstract class TourOfHeroesServiceImpl(sharding: ClusterSharding)(readSide: Read
     }
   }
 
-  // Because we aren't change the front end, this method will not be called.
+  // Because we don't change the front end, this method will not be called.
   // But it is here as an illustration for how to request an aggregate's history.
   private val readJournal = PersistenceQuery(materializer.system)
     .readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
