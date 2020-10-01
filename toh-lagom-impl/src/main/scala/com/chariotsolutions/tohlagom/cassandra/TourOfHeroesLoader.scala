@@ -20,6 +20,6 @@ class TourOfHeroesLoader extends common.TourOfHeroesLoader {
 
 abstract class TourOfHeroesApplication(context: LagomApplicationContext)
   extends LagomApplication(context) with common.TourOfHeroesApplication with CassandraPersistenceComponents {
-  // The wire[T] macro injects all nevessary constructor arguments.
+  // The wire[T] macro injects all necessary constructor arguments.
   lazy val lagomServer = serverFor[TourOfHeroesService](wire[TourOfHeroesServiceImpl])
 }

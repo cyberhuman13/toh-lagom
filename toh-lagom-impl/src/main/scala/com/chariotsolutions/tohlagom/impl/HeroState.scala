@@ -6,6 +6,7 @@ import akka.persistence.typed.scaladsl.{Effect, ReplyEffect}
 
 /**
  * The current state of the Hero aggregate.
+ * The 'valid' field is set to false for deleted aggregates.
  */
 case class HeroState(name: String, valid: Boolean) {
   def applyCommand(cmd: HeroCommand): ReplyEffect[HeroEvent, HeroState] = cmd match {
